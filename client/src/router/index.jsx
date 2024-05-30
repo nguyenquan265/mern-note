@@ -7,6 +7,10 @@ import ProtectedRoute from './ProtectedRoute'
 import NoteList from '../components/NoteList'
 import Note from '../components/Note'
 
+import { loader as homeLoader } from '../pages/Home'
+import { loader as noteListLoader } from '../components/NoteList'
+import { loader as noteLoader } from '../components/Note'
+
 const router = createBrowserRouter([
   {
     element: <Layout />,
@@ -18,14 +22,17 @@ const router = createBrowserRouter([
           {
             path: '/',
             element: <Home />,
+            loader: homeLoader,
             children: [
               {
                 path: `folders/:folderId`,
                 element: <NoteList />,
+                loader: noteListLoader,
                 children: [
                   {
                     path: `note/:noteId`,
-                    element: <Note />
+                    element: <Note />,
+                    loader: noteLoader
                   }
                 ]
               }

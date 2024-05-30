@@ -1,13 +1,33 @@
 import { Box, Card, CardContent, Grid, List, Typography } from '@mui/material'
 import { useState } from 'react'
-import { Link, Outlet, useParams } from 'react-router-dom'
+import { Link, Outlet, useLoaderData, useParams } from 'react-router-dom'
+import { graphQLRequest } from '../utils/request'
+
+// eslint-disable-next-line react-refresh/only-export-components
+export const loader = async ({ params }) => {
+  const query = `query Folder($folderId: String!) {
+    folder(folderId: $folderId) {
+      id
+      name
+      notes {
+        content
+        id
+      }
+    }
+  }`
+
+  const data = await graphQLRequest({
+    query,
+    variables: { folderId: params.folderId }
+  })
+
+  return data
+}
 
 function NoteList() {
   const { NoteId } = useParams()
   const [activeNote, setActiveNote] = useState(NoteId)
-  const folder = {
-    notes: [{ id: '1', content: '<p>this a brand new note</p>' }]
-  }
+  const { folder } = useLoaderData()
 
   return (
     <Grid container height='100%'>

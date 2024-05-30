@@ -1,42 +1,45 @@
-import { createContext, useEffect, useState } from "react"
-import PropTypes from 'prop-types'
-import { getAuth } from 'firebase/auth'
-import { useNavigate } from "react-router-dom"
+import { createContext, useEffect, useState } from 'react';
+import { getAuth } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
+import { CircularProgress } from '@mui/material';
 
-export const AuthContext = createContext()
+export const AuthContext = createContext();
 
-function AuthProvider({ children }) {
-  const [user, setUser] = useState({})
-  const navigate = useNavigate()
+export default function AuthProvider({ children }) {
+  const [user, setUser] = useState({});
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
 
-  const auth = getAuth()
+  const auth = getAuth();
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
+    const unsubcribed = auth.onIdTokenChanged((user) => {
       if (user?.uid) {
-        setUser(user)
-        localStorage.setItem('accessToken', user.accessToken)
-        return
+        setUser(user);
+
+        if (user.accessToken !== localStorage.getItem('accessToken')) {
+          localStorage.setItem('accessToken', user.accessToken);
+          window.location.reload();
+        }
+
+        setIsLoading(false);
+        return;
       }
 
-      setUser({})
-      localStorage.removeItem('accessToken')
-      navigate('/login')
-    })
+      setIsLoading(false);
+      setUser({});
+      localStorage.clear();
+      navigate('/login');
+    });
 
-    return () => unsubscribe()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [auth])
+    return () => {
+      unsubcribed();
+    };
+  }, [auth]);
 
   return (
     <AuthContext.Provider value={{ user, setUser }}>
-      {children}
+      {isLoading ? <CircularProgress /> : children}
     </AuthContext.Provider>
-  )
+  );
 }
-
-AuthProvider.propTypes = {
-  children: PropTypes.node.isRequired,
-}
-
-export default AuthProvider

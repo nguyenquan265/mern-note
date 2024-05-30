@@ -1,19 +1,42 @@
 import { Box, Grid, Typography } from '@mui/material'
 import UserMenu from '../components/UserMenu'
 import FolderList from '../components/FolderList'
-import { Outlet } from 'react-router-dom'
+import { Outlet, useLoaderData } from 'react-router-dom'
+import { graphQLRequest } from '../utils/request'
+
+// eslint-disable-next-line react-refresh/only-export-components
+export const loader = async () => {
+  const query = `query Folders {
+    folders {
+      createdAt
+      id
+      name
+    }
+  }`
+
+  const data = await graphQLRequest({ query })
+
+  return data
+}
 
 function Home() {
+  const { folders } = useLoaderData()
+
   return (
     <>
-      <Typography variant="h4" sx={{ mb: '20px' }}>Note App</Typography>
+      <Typography variant='h4' sx={{ mb: '20px' }}>
+        Note App
+      </Typography>
       <Box sx={{ display: 'flex', justifyContent: 'right', mb: '10px' }}>
         <UserMenu />
       </Box>
 
-      <Grid container sx={{ height: '50vh', boxShadow: '0 0 15px 0 rgb(193 193 193 / 60%)' }}>
+      <Grid
+        container
+        sx={{ height: '50vh', boxShadow: '0 0 15px 0 rgb(193 193 193 / 60%)' }}
+      >
         <Grid item xs={3} sx={{ height: '100%' }}>
-          <FolderList folders={[{ id: '1', name: "Plan for Tet holiday" }, { id: '2', name: "Plan for Tet holiday" }]} />
+          <FolderList folders={folders} />
         </Grid>
         <Grid item xs={9} sx={{ height: '100%' }}>
           <Outlet />

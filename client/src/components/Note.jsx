@@ -1,12 +1,37 @@
-import { useEffect, useState } from "react"
-import { ContentState, EditorState, convertFromHTML, convertToRaw } from 'draft-js'
-import { Editor } from "react-draft-wysiwyg"
+import { useEffect, useState } from 'react'
+import {
+  ContentState,
+  EditorState,
+  convertFromHTML,
+  convertToRaw
+} from 'draft-js'
+import { Editor } from 'react-draft-wysiwyg'
 import { draftToHtml } from 'draftjs-to-html'
+import { useLoaderData } from 'react-router-dom'
+import { graphQLRequest } from '../utils/request'
+
+// eslint-disable-next-line react-refresh/only-export-components
+export const loader = async ({ params }) => {
+  const query = `query Note($noteId: String!) {
+    note(noteId: $noteId) {
+      content
+      id
+    }
+  }`
+
+  const data = await graphQLRequest({
+    query,
+    variables: { noteId: params.noteId }
+  })
+
+  return data
+}
 
 function Note() {
-  const note = { id: '999', content: '<p>this is new note</p>' }
-
-  const [editorState, setEditorState] = useState(() => { return EditorState.createEmpty() })
+  const { note } = useLoaderData()
+  const [editorState, setEditorState] = useState(() => {
+    return EditorState.createEmpty()
+  })
   const [rawHTML, setRawHTML] = useState(note.content)
 
   const handleChange = (e) => {
@@ -16,8 +41,12 @@ function Note() {
 
   useEffect(() => {
     const blockFromHTML = convertFromHTML(note.content)
-    const state = ContentState.createFromBlockArray(blockFromHTML.contentBlocks, blockFromHTML.entityMap)
+    const state = ContentState.createFromBlockArray(
+      blockFromHTML.contentBlocks,
+      blockFromHTML.entityMap
+    )
     setEditorState(EditorState.createWithContent(state))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [note.id])
 
   useEffect(() => {
@@ -28,7 +57,7 @@ function Note() {
     <Editor
       editorState={editorState}
       onEditorStateChange={handleChange}
-      placeholder="Write something..."
+      placeholder='Write something...'
     />
   )
 }

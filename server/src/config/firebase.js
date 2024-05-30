@@ -1,5 +1,4 @@
-import { initializeApp } from 'firebase/app'
-import { getAnalytics } from 'firebase/analytics'
+import { initializeApp } from 'firebase-admin/app'
 
 const firebaseConfig = {
   apiKey: 'AIzaSyDYShJOm1LR7En-vZhOXWhAvKKMhKuVrPg',
@@ -11,5 +10,5 @@ const firebaseConfig = {
   measurementId: 'G-VQ5SXLCG3Z'
 }
 
-const app = initializeApp(firebaseConfig)
-const analytics = getAnalytics(app)
+initializeApp(firebaseConfig)
+
