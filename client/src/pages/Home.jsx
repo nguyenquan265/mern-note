@@ -8,7 +8,6 @@ import { graphQLRequest } from '../utils/request'
 export const loader = async () => {
   const query = `query Folders {
     folders {
-      createdAt
       id
       name
     }

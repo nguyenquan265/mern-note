@@ -1,7 +1,25 @@
-import { Box, Card, CardContent, Grid, List, Typography } from '@mui/material'
-import { useState } from 'react'
-import { Link, Outlet, useLoaderData, useParams } from 'react-router-dom'
+import {
+  Box,
+  Card,
+  CardContent,
+  Grid,
+  IconButton,
+  List,
+  Tooltip,
+  Typography
+} from '@mui/material'
+import { useEffect, useState } from 'react'
+import {
+  Link,
+  Outlet,
+  useLoaderData,
+  useNavigate,
+  useParams,
+  useSubmit
+} from 'react-router-dom'
 import { graphQLRequest } from '../utils/request'
+import { NoteAddOutlined } from '@mui/icons-material'
+import moment from 'moment'
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const loader = async ({ params }) => {
@@ -12,6 +30,7 @@ export const loader = async ({ params }) => {
       notes {
         content
         id
+        updatedAt
       }
     }
   }`
@@ -24,10 +43,47 @@ export const loader = async ({ params }) => {
   return data
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
+export const action = async ({ request }) => {
+  const formData = await request.formData()
+  const data = Object.fromEntries(formData)
+
+  const query = `mutation Mutation($content: String!, $folderId: ID!) {
+    addNote(content: $content, folderId: $folderId) {
+      id
+      content
+    }
+  }`
+
+  const { addNote } = await graphQLRequest({ query, variables: data })
+
+  return addNote
+}
+
 function NoteList() {
-  const { NoteId } = useParams()
-  const [activeNote, setActiveNote] = useState(NoteId)
+  const { noteId, folderId } = useParams()
+  const [activeNote, setActiveNote] = useState(noteId)
   const { folder } = useLoaderData()
+  const submit = useSubmit()
+  const navigate = useNavigate()
+
+  const handleAddNewNote = async () => {
+    submit(
+      { content: 'Write something...', folderId },
+      { method: 'POST', action: `/folders/${folderId}` }
+    )
+  }
+
+  useEffect(() => {
+    if (noteId) {
+      setActiveNote(noteId)
+      return
+    }
+
+    if (folder?.notes?.[0]) {
+      navigate('note/' + folder.notes[0].id)
+    }
+  }, [noteId, folder.notes])
 
   return (
     <Grid container height='100%'>
@@ -46,12 +102,23 @@ function NoteList() {
       >
         <List
           subheader={
-            <Box>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}
+            >
               <Typography sx={{ fontWeight: 'bold' }}>Notes</Typography>
+              <Tooltip title='Add Note' onClick={handleAddNewNote}>
+                <IconButton size='small'>
+                  <NoteAddOutlined />
+                </IconButton>
+              </Tooltip>
             </Box>
           }
         >
-          {folder.notes.map(({ id, content }) => (
+          {folder.notes.map(({ id, content, updatedAt }) => (
             <Link
               key={id}
               to={`note/${id}`}
@@ -71,6 +138,7 @@ function NoteList() {
                       __html: `${content.substring(0, 30) || 'Empty'}`
                     }}
                   />
+                  <Typography sx={{ fontSize: '10px' }}>{moment(updatedAt).format('MMMM Do YYYY, h:mm:ss a')}</Typography>
                 </CardContent>
               </Card>
             </Link>

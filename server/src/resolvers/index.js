@@ -1,7 +1,16 @@
-import fakeData from '~/fakeData'
 import { Author, Folder, Note } from '~/models'
+import { GraphQLScalarType } from 'graphql'
 
 const resolvers = {
+  Date: new GraphQLScalarType({
+    name: 'Date',
+    parseValue(value) {
+      return new Date(value)
+    },
+    serialize(value) {
+      return value.toISOString()
+    }
+  }),
   Query: {
     folders: async (parent, args, context) => {
       const folders = await Folder.find({
@@ -24,6 +33,17 @@ const resolvers = {
     }
   },
   Mutation: {
+    addNote: async (parent, args) => {
+      const note = await Note.create(args)
+
+      return note
+    },
+    updateNote: async (parent, args) => {
+      const noteId = args.id
+      const note = await Note.findByIdAndUpdate(noteId, args)
+
+      return note
+    },
     addFolder: async (parent, args, context) => {
       const folder = await Folder.create({ ...args, authorId: context.uid })
 
@@ -42,16 +62,16 @@ const resolvers = {
     }
   },
   Folder: {
-    author: async (parent, args) => {
+    author: async (parent) => {
       const { authorId } = parent
       const author = await Author.findOne({ uid: authorId })
 
       return author
     },
-    notes: async (parent, args) => {
+    notes: async (parent) => {
       const notes = await Note.find({
         folderId: parent.id
-      }).sort({ createdAt: -1 })
+      }).sort({ updatedAt: -1 })
 
       return notes
     }
