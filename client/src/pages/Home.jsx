@@ -3,6 +3,7 @@ import UserMenu from '../components/UserMenu'
 import FolderList from '../components/FolderList'
 import { Outlet, useLoaderData } from 'react-router-dom'
 import { graphQLRequest } from '../utils/request'
+import PushNotification from '../components/PushNotification'
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const loader = async () => {
@@ -28,6 +29,7 @@ function Home() {
       </Typography>
       <Box sx={{ display: 'flex', justifyContent: 'right', mb: '10px' }}>
         <UserMenu />
+        <PushNotification />
       </Box>
 
       <Grid
