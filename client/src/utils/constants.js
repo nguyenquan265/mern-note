@@ -1,2 +1,2 @@
-export const GRAPHQL_SERVER = 'http://localhost:8000'
-export const GRAPHQL_WS_SERVER = 'ws://localhost:8000'
+export const GRAPHQL_SERVER = 'https://mern-note-ch2m.onrender.com'
+export const GRAPHQL_WS_SERVER = 'ws://mern-note-ch2m.onrender.com'
